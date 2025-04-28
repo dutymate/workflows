@@ -1,0 +1,24 @@
+name: Auto fetch from mirror
+
+on:
+  schedule:
+    - cron: '0 15 * * *'
+  workflow_dispatch:
+
+jobs:
+  auto-fetch-from-mirror:
+    runs-on: ubuntu-latest
+
+    steps:
+    - name: Clone GitLab repository (mirror)
+      run: |
+        git clone --mirror https://${{ secrets.GITLAB_USERNAME }}:${{ secrets.GITLAB_PASSWORD }}@${{ secrets.GITLAB_REPO_URL }}.git
+
+    - name: Fetch and prune
+      run: git fetch --prune
+      working-directory: ${{ secrets.GITLAB_REPO_NAME }}.git
+
+
+    - name: Push to target repository
+      run: git push --mirror https://x-access-token:${{ secrets.PAT_TOKEN }}@github.com/${{ secrets.TARGET_REPO }}
+      working-directory: ${{ secrets.GITLAB_REPO_NAME }}.git
